@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#166534" />
+    <meta name="description" content="Offline 45-day planting and harvest schedule for hydroponic greenhouses." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Harvest Tracker</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Hydroponics schedule</p>
+        <h1>Harvest Tracker</h1>
+        <p class="subtitle">Expected harvest is calculated 45 days after planting.</p>
+      </div>
+      <div class="header-actions">
+        <button class="secondary-button" id="alerts-button" type="button">Enable alerts</button>
+        <button class="primary-button" id="install-button" type="button" hidden>Install app</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="summary" aria-label="Harvest schedule summary">
+        <div><span>Active plantings</span><strong id="total-count">0</strong></div>
+        <div><span>Due or overdue</span><strong id="due-count">0</strong></div>
+        <div><span>Due in 7 days</span><strong id="soon-count">0</strong></div>
+        <div><span>Next harvest</span><strong id="next-harvest">-</strong></div>
+      </section>
+
+      <section class="due-panel" id="due-panel" hidden>
+        <div>
+          <h2>Harvest attention needed</h2>
+          <p id="due-message"></p>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <form class="entry-form" id="entry-form">
+          <div class="section-heading">
+            <h2>Add planting</h2>
+            <p>Select the occupied greenhouse row, wall channel, or tower.</p>
+          </div>
+
+          <label>
+            Greenhouse
+            <select id="greenhouse-select" required>
+              <option value="">Select greenhouse</option>
+            </select>
+          </label>
+
+          <label>
+            Row or tower
+            <select id="row-select" required disabled>
+              <option value="">Select row or tower</option>
+            </select>
+          </label>
+
+          <label>
+            Planting date
+            <input type="date" id="planting-date" required />
+          </label>
+
+          <div class="harvest-preview">
+            <span>Expected harvest</span>
+            <strong id="harvest-preview">-</strong>
+          </div>
+
+          <button class="primary-button submit-button" type="submit">Add planting</button>
+        </form>
+
+        <section class="schedule">
+          <div class="section-heading">
+            <h2>Harvest schedule</h2>
+            <p id="alert-note">Alerts are checked whenever this app is opened or returns to the foreground.</p>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Greenhouse</th>
+                  <th>Location</th>
+                  <th>Planted</th>
+                  <th>Expected harvest</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="schedule-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-state">
+            No plantings recorded yet.
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
