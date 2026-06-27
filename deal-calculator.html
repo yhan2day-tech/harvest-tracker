@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USSC-DBP-LGU Deal Calculator</title>
+    <style>
+      :root {
+        --blue: #1d4ed8;
+        --blue-soft: #eff6ff;
+        --blue-input-bg: #dbeafe;
+        --blue-input-border: #93c5fd;
+        --green: #166534;
+        --green-dark: #14532d;
+        --green-soft: #ecfdf3;
+        --ink: #17201b;
+        --muted: #5d6b62;
+        --line: #d9e1dc;
+        --surface: #ffffff;
+        --page: #f3f6f4;
+        --amber: #a15c00;
+        --amber-soft: #fff7df;
+        --radius: 8px;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: var(--page);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", Arial, sans-serif;
+      }
+
+      header {
+        background: var(--green-dark);
+        color: #fff;
+        padding: 22px max(20px, calc((100vw - 860px) / 2));
+      }
+
+      header .eyebrow {
+        color: #b9e8ca;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      header h1 {
+        font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+        font-weight: 800;
+      }
+
+      header p.subtitle {
+        color: #d7f3e1;
+        font-size: 0.88rem;
+        margin-top: 4px;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 860px;
+        padding: 24px 20px 48px;
+        display: grid;
+        gap: 20px;
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-title .badge {
+        background: var(--blue-input-bg);
+        border: 1px solid var(--blue-input-border);
+        border-radius: 999px;
+        color: var(--blue);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 2px 8px;
+        text-transform: uppercase;
+      }
+
+      /* ── Input grid ── */
+      .inputs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px 20px;
+      }
+
+      @media (max-width: 560px) {
+        .inputs-grid { grid-template-columns: 1fr; }
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+      }
+
+      .field label {
+        color: #3f4d44;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .field label .unit {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+
+      .input-wrap .prefix,
+      .input-wrap .suffix {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 0.88rem;
+        pointer-events: none;
+      }
+
+      .input-wrap .prefix { left: 10px; }
+      .input-wrap .suffix { right: 10px; }
+
+      .input-wrap input {
+        width: 100%;
+        background: var(--blue-input-bg);
+        border: 1px solid var(--blue-input-border);
+        border-radius: 5px;
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.92rem;
+        min-height: 42px;
+        padding: 0.55rem 0.7rem;
+      }
+
+      .input-wrap input.has-prefix { padding-left: 22px; }
+      .input-wrap input.has-suffix { padding-right: 28px; }
+
+      .input-wrap input:focus {
+        border-color: var(--blue);
+        outline: 3px solid #bfdbfe;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        opacity: 0.6;
+      }
+
+      /* ── Derived chip ── */
+      .derived-chip {
+        background: var(--green-soft);
+        border: 1px solid #a7f3c2;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        margin-top: 4px;
+        gap: 12px;
+      }
+
+      .derived-chip span {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .derived-chip strong {
+        color: var(--green);
+        font-size: 0.92rem;
+        white-space: nowrap;
+      }
+
+      /* ── Results table ── */
+      .results-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 480px;
+      }
+
+      thead th {
+        border-bottom: 2px solid var(--line);
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 8px 12px;
+        text-align: right;
+        text-transform: uppercase;
+      }
+
+      thead th:first-child { text-align: left; }
+
+      tbody tr:last-child td { border-bottom: none; }
+
+      tbody td {
+        border-bottom: 1px solid var(--line);
+        font-size: 0.88rem;
+        padding: 12px 12px;
+        vertical-align: middle;
+      }
+
+      tbody td:first-child {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      tbody td:not(:first-child) {
+        color: #1e3a5f;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      tbody tr.highlight td {
+        background: var(--blue-soft);
+      }
+
+      tbody tr.highlight td:first-child {
+        color: var(--blue);
+        font-weight: 700;
+      }
+
+      tbody tr.highlight td:not(:first-child) {
+        color: var(--blue);
+      }
+
+      tbody tr.divider td {
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 4px;
+      }
+
+      .no-cards-row td { color: var(--muted) !important; }
+
+      /* ── Guide section ── */
+      .guide {
+        border-left: 4px solid var(--blue-input-border);
+        padding: 12px 16px;
+        background: var(--blue-soft);
+        border-radius: 0 var(--radius) var(--radius) 0;
+      }
+
+      .guide p {
+        color: #1e3a5f;
+        font-size: 0.83rem;
+        margin-bottom: 4px;
+      }
+
+      .guide p:last-child { margin-bottom: 0; }
+
+      .guide strong { font-weight: 700; display: block; margin-bottom: 8px; color: #1d4ed8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+      /* ── Reset button ── */
+      .reset-btn {
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--muted);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.82rem;
+        padding: 6px 14px;
+        margin-top: 14px;
+        transition: border-color 0.15s, color 0.15s;
+      }
+
+      .reset-btn:hover {
+        border-color: #93c5fd;
+        color: var(--blue);
+      }
+
+      /* ── Section divider ── */
+      .section-divider {
+        border: none;
+        border-top: 2px dashed var(--line);
+        margin: 18px 0 16px;
+      }
+
+      .section-label {
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Financial Calculator</p>
+      <h1>USSC-DBP-LGU Deal</h1>
+      <p class="subtitle">ADB requirement calculator — edit the blue inputs and results update instantly.</p>
+    </header>
+
+    <main>
+
+      <!-- ── Inputs ── -->
+      <div class="card">
+        <div class="card-title">
+          Card &amp; Fee Parameters
+          <span class="badge">Blue cells — edit here</span>
+        </div>
+
+        <div class="inputs-grid">
+          <div class="field">
+            <label>Production Cost per Card <span class="unit">(₱)</span></label>
+            <div class="input-wrap">
+              <span class="prefix">₱</span>
+              <input class="has-prefix" id="inp-production-cost" type="number" min="0" step="1" value="120" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Loading Fee per Card <span class="unit">(₱)</span></label>
+            <div class="input-wrap">
+              <span class="prefix">₱</span>
+              <input class="has-prefix" id="inp-loading-fee" type="number" min="0" step="1" value="20" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Loading Frequency per Year</label>
+            <div class="input-wrap">
+              <input id="inp-loading-freq" type="number" min="1" step="1" value="8" />
+              <span class="suffix">× / yr</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Number of Cards</label>
+            <div class="input-wrap">
+              <input id="inp-num-cards" type="number" min="1" step="1000" value="104000" />
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider" />
+        <p class="section-label">CASA Return Parameters</p>
+
+        <div class="inputs-grid">
+          <div class="field">
+            <label>Net CASA ADB Return <span class="unit">(%)</span></label>
+            <div class="input-wrap">
+              <input class="has-suffix" id="inp-net-casa" type="number" min="0" max="100" step="0.01" value="2" />
+              <span class="suffix">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Bank "Premium" Retained <span class="unit">(%)</span></label>
+            <div class="input-wrap">
+              <input class="has-suffix" id="inp-bank-premium-pct" type="number" min="0" max="100" step="1" value="25" />
+              <span class="suffix">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="derived-chip">
+          <span>Bank Premium Rate (Net CASA × Premium %)</span>
+          <strong id="out-bank-premium-rate">—</strong>
+        </div>
+
+        <button class="reset-btn" id="reset-btn" type="button">Reset to defaults</button>
+      </div>
+
+      <!-- ── Results ── -->
+      <div class="card">
+        <div class="card-title">ADB Requirement Summary</div>
+        <div class="results-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Y1</th>
+                <th>Y2 (Onwards)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Total Cost per Card per Year</td>
+                <td id="out-total-cost-y1">—</td>
+                <td id="out-total-cost-y2">—</td>
+              </tr>
+              <tr class="divider">
+                <td>ADB Requirement per Card per Year</td>
+                <td id="out-adb-per-card-y1">—</td>
+                <td id="out-adb-per-card-y2">—</td>
+              </tr>
+              <tr class="no-cards-row">
+                <td>No. of Cards</td>
+                <td id="out-num-cards-y1">—</td>
+                <td id="out-num-cards-y2">—</td>
+              </tr>
+              <tr class="highlight">
+                <td>Total ADB Requirement (All Cards)</td>
+                <td id="out-adb-all-y1">—</td>
+                <td id="out-adb-all-y2">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Guide ── -->
+      <div class="guide">
+        <strong>Guide</strong>
+        <p>1. Edit only the blue input fields above.</p>
+        <p>2. Verify the current Net CASA ADB Return rate with your bank.</p>
+        <p>3. "Bank Premium" is how much of your CASA earning the bank retains (the rest covers card costs).</p>
+      </div>
+
+    </main>
+
+    <script>
+      const DEFAULTS = {
+        productionCost: 120,
+        loadingFee: 20,
+        loadingFreq: 8,
+        numCards: 104000,
+        netCasa: 2,
+        bankPremiumPct: 25,
+      };
+
+      const ids = {
+        productionCost: 'inp-production-cost',
+        loadingFee:     'inp-loading-fee',
+        loadingFreq:    'inp-loading-freq',
+        numCards:       'inp-num-cards',
+        netCasa:        'inp-net-casa',
+        bankPremiumPct: 'inp-bank-premium-pct',
+      };
+
+      function getVal(id) {
+        return parseFloat(document.getElementById(id).value) || 0;
+      }
+
+      function fmt(n, decimals = 0) {
+        if (!isFinite(n)) return '—';
+        return '₱' + n.toLocaleString('en-PH', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+      }
+
+      function fmtRate(n) {
+        if (!isFinite(n)) return '—';
+        return (n * 100).toFixed(4) + '%';
+      }
+
+      function fmtCount(n) {
+        if (!isFinite(n)) return '—';
+        return n.toLocaleString('en-PH');
+      }
+
+      function set(id, val) {
+        document.getElementById(id).textContent = val;
+      }
+
+      function recalc() {
+        const productionCost = getVal(ids.productionCost);
+        const loadingFee     = getVal(ids.loadingFee);
+        const loadingFreq    = getVal(ids.loadingFreq);
+        const numCards       = getVal(ids.numCards);
+        const netCasa        = getVal(ids.netCasa) / 100;       // e.g. 0.02
+        const bankPremiumPct = getVal(ids.bankPremiumPct) / 100; // e.g. 0.25
+
+        // L14 = L13 * M14
+        const bankPremiumRate = netCasa * bankPremiumPct;
+
+        // Effective return rate used in ADB calculation
+        const effectiveRate = netCasa + bankPremiumRate; // L13 + L14
+
+        // Total cost per card
+        const totalCostY1 = productionCost + (loadingFee * loadingFreq); // L17
+        const totalCostY2 = loadingFee * loadingFreq;                    // M17
+
+        // ADB per card
+        const adbPerCardY1 = effectiveRate > 0 ? totalCostY1 / effectiveRate : NaN;
+        const adbPerCardY2 = effectiveRate > 0 ? totalCostY2 / effectiveRate : NaN;
+
+        // Total ADB (all cards)
+        const adbAllY1 = numCards * adbPerCardY1;
+        const adbAllY2 = numCards * adbPerCardY2;
+
+        // Render
+        set('out-bank-premium-rate', fmtRate(bankPremiumRate));
+
+        set('out-total-cost-y1', fmt(totalCostY1, 2));
+        set('out-total-cost-y2', fmt(totalCostY2, 2));
+
+        set('out-adb-per-card-y1', fmt(adbPerCardY1, 2));
+        set('out-adb-per-card-y2', fmt(adbPerCardY2, 2));
+
+        set('out-num-cards-y1', fmtCount(numCards));
+        set('out-num-cards-y2', fmtCount(numCards));
+
+        set('out-adb-all-y1', fmt(adbAllY1, 2));
+        set('out-adb-all-y2', fmt(adbAllY2, 2));
+      }
+
+      Object.values(ids).forEach(id => {
+        document.getElementById(id).addEventListener('input', recalc);
+      });
+
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById(ids.productionCost).value = DEFAULTS.productionCost;
+        document.getElementById(ids.loadingFee).value     = DEFAULTS.loadingFee;
+        document.getElementById(ids.loadingFreq).value    = DEFAULTS.loadingFreq;
+        document.getElementById(ids.numCards).value       = DEFAULTS.numCards;
+        document.getElementById(ids.netCasa).value        = DEFAULTS.netCasa;
+        document.getElementById(ids.bankPremiumPct).value = DEFAULTS.bankPremiumPct;
+        recalc();
+      });
+
+      recalc();
+    </script>
+  </body>
+</html>
