@@ -422,6 +422,9 @@
         </div>
       </div>
 
+      <!-- ── JS error banner (hidden unless recalc throws) ── -->
+      <div id="js-error" hidden style="background:#fff0ed;border:1px solid #f0b7ae;border-radius:6px;color:#7a271a;font-size:0.85rem;padding:12px 16px;"></div>
+
       <!-- ── Guide ── -->
       <div class="guide">
         <strong>Guide</strong>
@@ -455,12 +458,16 @@
         return parseFloat(document.getElementById(id).value) || 0;
       }
 
-      function fmt(n, decimals = 0) {
+      function addCommas(str) {
+        var parts = str.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.');
+      }
+
+      function fmt(n, decimals) {
+        if (decimals === undefined) decimals = 0;
         if (!isFinite(n)) return '—';
-        return '₱' + n.toLocaleString('en-PH', {
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals,
-        });
+        return '₱' + addCommas(n.toFixed(decimals));
       }
 
       function fmtRate(n) {
@@ -470,14 +477,16 @@
 
       function fmtCount(n) {
         if (!isFinite(n)) return '—';
-        return n.toLocaleString('en-PH');
+        return addCommas(Math.round(n).toString());
       }
 
       function set(id, val) {
-        document.getElementById(id).textContent = val;
+        var el = document.getElementById(id);
+        if (el) el.textContent = val;
       }
 
       function recalc() {
+        try {
         const productionCost = getVal(ids.productionCost);
         const loadingFee     = getVal(ids.loadingFee);
         const loadingFreq    = getVal(ids.loadingFreq);
@@ -517,6 +526,10 @@
 
         set('out-adb-all-y1', fmt(adbAllY1, 2));
         set('out-adb-all-y2', fmt(adbAllY2, 2));
+        } catch (e) {
+          var errEl = document.getElementById('js-error');
+          if (errEl) { errEl.textContent = 'Calculation error: ' + e.message; errEl.hidden = false; }
+        }
       }
 
       Object.values(ids).forEach(id => {
