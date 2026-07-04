@@ -2,7 +2,7 @@
   "id": "./index.html",
   "name": "Harvest Tracker",
   "short_name": "Harvest",
-  "description": "Offline 45-day planting and harvest schedule for hydroponic greenhouse locations.",
+  "description": "Offline 35-day transplanting and harvest schedule for hydroponic greenhouse locations.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

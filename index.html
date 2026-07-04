@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#166534" />
-    <meta name="description" content="Offline 45-day planting and harvest schedule for hydroponic greenhouses." />
+    <meta name="description" content="Offline 35-day transplanting and harvest schedule for hydroponic greenhouses." />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icon-192.png" type="image/png" />
     <link rel="apple-touch-icon" href="./icon-192.png" />
@@ -16,7 +16,7 @@
       <div>
         <p class="eyebrow">Hydroponics schedule</p>
         <h1>Harvest Tracker</h1>
-        <p class="subtitle">Expected harvest is calculated 45 days after planting.</p>
+        <p class="subtitle">Expected harvest is calculated 35 days after transplanting.</p>
       </div>
       <div class="header-actions">
         <button class="secondary-button" id="alerts-button" type="button">Enable alerts</button>
@@ -26,7 +26,7 @@
 
     <main>
       <section class="summary" aria-label="Harvest schedule summary">
-        <div><span>Active plantings</span><strong id="total-count">0</strong></div>
+        <div><span>Active transplants</span><strong id="total-count">0</strong></div>
         <div><span>Due or overdue</span><strong id="due-count">0</strong></div>
         <div><span>Due in 7 days</span><strong id="soon-count">0</strong></div>
         <div><span>Next harvest</span><strong id="next-harvest">-</strong></div>
@@ -42,7 +42,7 @@
       <section class="workspace">
         <form class="entry-form" id="entry-form">
           <div class="section-heading">
-            <h2>Add planting</h2>
+            <h2>Add transplant</h2>
             <p>Select the occupied greenhouse row, wall channel, or tower.</p>
           </div>
 
@@ -61,7 +61,7 @@
           </label>
 
           <label>
-            Planting date
+            Transplanting date
             <input type="date" id="planting-date" required />
           </label>
 
@@ -70,7 +70,7 @@
             <strong id="harvest-preview">-</strong>
           </div>
 
-          <button class="primary-button submit-button" type="submit">Add planting</button>
+          <button class="primary-button submit-button" type="submit">Add transplant</button>
         </form>
 
         <section class="schedule">
@@ -85,7 +85,7 @@
                 <tr>
                   <th>Greenhouse</th>
                   <th>Location</th>
-                  <th>Planted</th>
+                  <th>Transplanted</th>
                   <th>Expected harvest</th>
                   <th>Status</th>
                   <th></th>
@@ -95,7 +95,7 @@
             </table>
           </div>
           <div class="empty-state" id="empty-state">
-            No plantings recorded yet.
+            No transplants recorded yet.
           </div>
         </section>
       </section>

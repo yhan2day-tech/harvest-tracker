@@ -107,7 +107,7 @@ function addEntry(event) {
   const plantingDate = plantingDateInput.value;
 
   if (!greenhouse || !row || !plantingDate) {
-    showToast("Complete all planting fields");
+    showToast("Complete all transplanting fields");
     return;
   }
 
@@ -118,7 +118,7 @@ function addEntry(event) {
       entry.plantingDate === plantingDate
   );
   if (duplicate) {
-    showToast("That planting is already recorded");
+    showToast("That transplant is already recorded");
     return;
   }
 
@@ -138,7 +138,7 @@ function addEntry(event) {
   plantingDateInput.value = formatLocalDate(new Date());
   updateRowOptions();
   updateHarvestPreview();
-  showToast("Planting added");
+  showToast("Transplant added");
   checkDueAlerts();
 }
 
@@ -152,7 +152,7 @@ function handleScheduleClick(event) {
   entries = entries.filter((item) => item.id !== entry.id);
   saveEntries();
   render();
-  showToast("Planting deleted");
+  showToast("Transplant deleted");
 }
 
 function render() {
@@ -179,10 +179,10 @@ function render() {
     row.innerHTML = `
       <td data-label="Greenhouse">${escapeHtml(entry.greenhouseName)}</td>
       <td data-label="Location"><strong>${escapeHtml(entry.row)}</strong></td>
-      <td data-label="Planted">${formatDisplayDate(entry.plantingDate)}</td>
+      <td data-label="Transplanted">${formatDisplayDate(entry.plantingDate)}</td>
       <td data-label="Expected harvest">${formatDisplayDate(entry.harvestDate)}</td>
       <td data-label="Status"><span class="status-badge ${status.kind}">${escapeHtml(status.label)}</span></td>
-      <td class="row-actions"><button class="delete-button" data-delete-id="${escapeHtml(entry.id)}" type="button" title="Delete planting">Delete</button></td>
+      <td class="row-actions"><button class="delete-button" data-delete-id="${escapeHtml(entry.id)}" type="button" title="Delete transplant">Delete</button></td>
     `;
     scheduleBody.append(row);
   }
@@ -226,7 +226,7 @@ async function checkDueAlerts() {
   const body =
     pending.length === 1
       ? `${pending[0].greenhouseName} ${pending[0].row} is ready for harvest.`
-      : `${pending.length} planting locations are due for harvest.`;
+      : `${pending.length} transplant locations are due for harvest.`;
 
   try {
     const registration = await navigator.serviceWorker?.ready;

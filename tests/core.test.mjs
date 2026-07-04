@@ -16,9 +16,9 @@ test("includes all configured NFT, PVC wall, tower, and channel locations", () =
   assert.equal(GREENHOUSES.GH3.rows.length, 20);
 });
 
-test("calculates harvest exactly 45 calendar days after planting", () => {
-  assert.equal(computeHarvestDate("2026-06-09"), "2026-07-24");
-  assert.equal(computeHarvestDate("2026-01-20"), "2026-03-06");
+test("calculates harvest exactly 35 calendar days after transplanting", () => {
+  assert.equal(computeHarvestDate("2026-06-09"), "2026-07-14");
+  assert.equal(computeHarvestDate("2026-01-20"), "2026-02-24");
 });
 
 test("calculates day differences from local calendar dates", () => {
@@ -39,7 +39,7 @@ test("migrates legacy entries with stable ids and harvest dates", () => {
     () => "new-id"
   );
   assert.equal(entries[0].id, "new-id");
-  assert.equal(entries[0].harvestDate, "2026-07-24");
+  assert.equal(entries[0].harvestDate, "2026-07-14");
 });
 
 test("sorts a copy without changing deletion identities", () => {

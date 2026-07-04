@@ -1,4 +1,4 @@
-export const HARVEST_DAYS = 45;
+export const HARVEST_DAYS = 35;
 
 export const GREENHOUSES = {
   GH1: {
