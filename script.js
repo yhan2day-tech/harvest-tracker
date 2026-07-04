@@ -7,7 +7,7 @@ import {
   getHarvestStatus,
   normalizeEntries,
   sortEntries
-} from "./core.js";
+} from "./core.js?v=1.2.1";
 
 const STORAGE_KEY = "harvest-tracker-entries-v2";
 const LEGACY_STORAGE_KEY = "harvestEntries";

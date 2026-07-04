@@ -1,10 +1,10 @@
-const CACHE_NAME = "harvest-tracker-cache-v5";
+const CACHE_NAME = "harvest-tracker-cache-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css",
-  "./script.js",
-  "./core.js",
+  "./styles.css?v=1.2.1",
+  "./script.js?v=1.2.1",
+  "./core.js?v=1.2.1",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"
