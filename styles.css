@@ -82,6 +82,9 @@ button {
 
 .primary-button,
 .secondary-button,
+.edit-button,
+.save-button,
+.cancel-button,
 .delete-button {
   border: 1px solid transparent;
   border-radius: 6px;
@@ -301,8 +304,33 @@ td {
   color: var(--red);
 }
 
+.status-badge.unknown {
+  background: #edf2ef;
+  color: var(--muted);
+}
+
 .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
   text-align: right;
+}
+
+.edit-button,
+.cancel-button {
+  background: transparent;
+  border-color: #b9c5bd;
+  color: var(--ink);
+  min-height: 34px;
+  padding: 0.4rem 0.6rem;
+}
+
+.save-button {
+  background: var(--green);
+  color: #fff;
+  min-height: 34px;
+  padding: 0.4rem 0.6rem;
 }
 
 .delete-button {
@@ -311,6 +339,17 @@ td {
   color: var(--red);
   min-height: 34px;
   padding: 0.4rem 0.6rem;
+}
+
+.editing-row {
+  background: #fbfefc;
+}
+
+.editing-row input,
+.editing-row select {
+  min-height: 38px;
+  min-width: 140px;
+  padding: 0.45rem 0.55rem;
 }
 
 .empty-state {

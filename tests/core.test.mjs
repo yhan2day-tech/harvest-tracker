@@ -35,7 +35,15 @@ test("formats due and overdue statuses", () => {
 
 test("migrates legacy entries with stable ids and harvest dates", () => {
   const entries = normalizeEntries(
-    [{ greenhouseKey: "GH1", greenhouseName: "Greenhouse 1", row: "NFT 1", plantingDate: "2026-06-09" }],
+    [
+      {
+        greenhouseKey: "GH1",
+        greenhouseName: "Greenhouse 1",
+        harvestDate: "2099-01-01",
+        row: "NFT 1",
+        plantingDate: "2026-06-09"
+      }
+    ],
     () => "new-id"
   );
   assert.equal(entries[0].id, "new-id");

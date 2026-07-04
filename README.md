@@ -6,6 +6,7 @@ Harvest Tracker is a free offline-first PWA for recording hydroponic transplant 
 
 - Greenhouse, NFT, PVC wall, tower, and channel location lists
 - Automatic 35-day expected harvest calculation
+- Editable transplant rows that recalculate the harvest date when revised
 - Due, overdue, and due-soon status
 - Local browser storage with migration from the original ZIP version
 - Optional Android notifications checked when the app opens or returns to the foreground

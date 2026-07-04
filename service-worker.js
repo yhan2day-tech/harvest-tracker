@@ -1,4 +1,4 @@
-const CACHE_NAME = "harvest-tracker-cache-v4";
+const CACHE_NAME = "harvest-tracker-cache-v5";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -83,7 +83,7 @@ export function normalizeEntries(value, idFactory = () => `entry_${Date.now()}`)
       ...entry,
       id: entry.id || idFactory(),
       greenhouseName: entry.greenhouseName || GREENHOUSES[entry.greenhouseKey]?.name || entry.greenhouseKey,
-      harvestDate: entry.harvestDate || computeHarvestDate(entry.plantingDate),
+      harvestDate: computeHarvestDate(entry.plantingDate),
       notifiedOn: entry.notifiedOn || ""
     }));
 }

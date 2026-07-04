@@ -28,6 +28,7 @@ const toastElement = document.querySelector("#toast");
 
 let entries = loadEntries();
 let deferredInstallPrompt = null;
+let editingId = null;
 
 boot();
 
@@ -48,6 +49,7 @@ function bindEvents() {
   plantingDateInput.addEventListener("change", updateHarvestPreview);
   form.addEventListener("submit", addEntry);
   scheduleBody.addEventListener("click", handleScheduleClick);
+  scheduleBody.addEventListener("change", handleScheduleChange);
   alertsButton.addEventListener("click", enableAlerts);
   installButton.addEventListener("click", installApp);
 
@@ -111,13 +113,7 @@ function addEntry(event) {
     return;
   }
 
-  const duplicate = entries.some(
-    (entry) =>
-      entry.greenhouseKey === greenhouseKey &&
-      entry.row === row &&
-      entry.plantingDate === plantingDate
-  );
-  if (duplicate) {
+  if (hasDuplicateEntry(greenhouseKey, row, plantingDate)) {
     showToast("That transplant is already recorded");
     return;
   }
@@ -143,16 +139,94 @@ function addEntry(event) {
 }
 
 function handleScheduleClick(event) {
-  const button = event.target.closest("[data-delete-id]");
-  if (!button) return;
-  const entry = entries.find((item) => item.id === button.dataset.deleteId);
+  const editButton = event.target.closest("[data-edit-id]");
+  if (editButton) {
+    editingId = editButton.dataset.editId;
+    render();
+    return;
+  }
+
+  const cancelButton = event.target.closest("[data-cancel-edit]");
+  if (cancelButton) {
+    editingId = null;
+    render();
+    return;
+  }
+
+  const saveButton = event.target.closest("[data-save-id]");
+  if (saveButton) {
+    saveEditedEntry(saveButton.dataset.saveId);
+    return;
+  }
+
+  const deleteButton = event.target.closest("[data-delete-id]");
+  if (!deleteButton) return;
+  const entry = entries.find((item) => item.id === deleteButton.dataset.deleteId);
   if (!entry) return;
   if (!window.confirm(`Delete ${entry.greenhouseName} ${entry.row}?`)) return;
 
   entries = entries.filter((item) => item.id !== entry.id);
+  if (editingId === entry.id) editingId = null;
   saveEntries();
   render();
   showToast("Transplant deleted");
+}
+
+function handleScheduleChange(event) {
+  const row = event.target.closest("tr[data-entry-id]");
+  if (!row) return;
+
+  if (event.target.matches("[data-edit-greenhouse]")) {
+    updateInlineRowOptions(row);
+  }
+
+  if (event.target.matches("[data-edit-greenhouse], [data-edit-row], [data-edit-date]")) {
+    updateInlinePreview(row);
+  }
+}
+
+function saveEditedEntry(id) {
+  const row = [...scheduleBody.querySelectorAll("tr[data-entry-id]")].find(
+    (item) => item.dataset.entryId === id
+  );
+  const existing = entries.find((entry) => entry.id === id);
+  if (!row || !existing) return;
+
+  const greenhouseKey = row.querySelector("[data-edit-greenhouse]")?.value;
+  const greenhouse = GREENHOUSES[greenhouseKey];
+  const location = row.querySelector("[data-edit-row]")?.value;
+  const plantingDate = row.querySelector("[data-edit-date]")?.value;
+
+  if (!greenhouse || !location || !plantingDate) {
+    showToast("Complete all transplanting fields");
+    return;
+  }
+
+  if (hasDuplicateEntry(greenhouseKey, location, plantingDate, id)) {
+    showToast("That transplant is already recorded");
+    return;
+  }
+
+  const harvestDate = computeHarvestDate(plantingDate);
+  entries = entries.map((entry) =>
+    entry.id === id
+      ? {
+          ...entry,
+          greenhouseKey,
+          greenhouseName: greenhouse.name,
+          row: location,
+          plantingDate,
+          harvestDate,
+          notifiedOn: entry.harvestDate === harvestDate ? entry.notifiedOn : "",
+          updatedAt: new Date().toISOString()
+        }
+      : entry
+  );
+  editingId = null;
+  saveEntries();
+  render();
+  showToast("Transplant updated");
+  checkDueAlerts();
 }
 
 function render() {
@@ -175,15 +249,23 @@ function render() {
     }
 
     const row = document.createElement("tr");
-    row.className = `status-${status.kind}`;
-    row.innerHTML = `
-      <td data-label="Greenhouse">${escapeHtml(entry.greenhouseName)}</td>
-      <td data-label="Location"><strong>${escapeHtml(entry.row)}</strong></td>
-      <td data-label="Transplanted">${formatDisplayDate(entry.plantingDate)}</td>
-      <td data-label="Expected harvest">${formatDisplayDate(entry.harvestDate)}</td>
-      <td data-label="Status"><span class="status-badge ${status.kind}">${escapeHtml(status.label)}</span></td>
-      <td class="row-actions"><button class="delete-button" data-delete-id="${escapeHtml(entry.id)}" type="button" title="Delete transplant">Delete</button></td>
-    `;
+    row.dataset.entryId = entry.id;
+    if (entry.id === editingId) {
+      renderEditRow(row, entry);
+    } else {
+      row.className = `status-${status.kind}`;
+      row.innerHTML = `
+        <td data-label="Greenhouse">${escapeHtml(entry.greenhouseName)}</td>
+        <td data-label="Location"><strong>${escapeHtml(entry.row)}</strong></td>
+        <td data-label="Transplanted">${formatDisplayDate(entry.plantingDate)}</td>
+        <td data-label="Expected harvest">${formatDisplayDate(entry.harvestDate)}</td>
+        <td data-label="Status"><span class="status-badge ${status.kind}">${escapeHtml(status.label)}</span></td>
+        <td class="row-actions">
+          <button class="edit-button" data-edit-id="${escapeHtml(entry.id)}" type="button" title="Edit transplant">Edit</button>
+          <button class="delete-button" data-delete-id="${escapeHtml(entry.id)}" type="button" title="Delete transplant">Delete</button>
+        </td>
+      `;
+    }
     scheduleBody.append(row);
   }
 
@@ -200,6 +282,88 @@ function render() {
     ? dueEntries.map((entry) => `${entry.greenhouseName} ${entry.row}`).join(", ")
     : "";
   updateAlertButton();
+}
+
+function renderEditRow(row, entry) {
+  const harvestDate = computeHarvestDate(entry.plantingDate);
+  const status = getHarvestStatus(computeDaysLeft(harvestDate));
+  row.className = `status-${status.kind} editing-row`;
+  row.innerHTML = `
+    <td data-label="Greenhouse">
+      <select data-edit-greenhouse="${escapeHtml(entry.id)}" aria-label="Edit greenhouse">
+        ${renderGreenhouseOptions(entry.greenhouseKey)}
+      </select>
+    </td>
+    <td data-label="Location">
+      <select data-edit-row="${escapeHtml(entry.id)}" aria-label="Edit row or tower">
+        ${renderLocationOptions(entry.greenhouseKey, entry.row)}
+      </select>
+    </td>
+    <td data-label="Transplanted">
+      <input data-edit-date="${escapeHtml(entry.id)}" aria-label="Edit transplanting date" type="date" value="${escapeHtml(entry.plantingDate)}" />
+    </td>
+    <td data-label="Expected harvest" data-edit-harvest>${formatDisplayDate(harvestDate)}</td>
+    <td data-label="Status"><span class="status-badge ${status.kind}" data-edit-status>${escapeHtml(status.label)}</span></td>
+    <td class="row-actions">
+      <button class="save-button" data-save-id="${escapeHtml(entry.id)}" type="button" title="Save transplant changes">Save</button>
+      <button class="cancel-button" data-cancel-edit type="button" title="Cancel edit">Cancel</button>
+    </td>
+  `;
+}
+
+function renderGreenhouseOptions(selectedKey) {
+  return [
+    optionMarkup("", "Select greenhouse", selectedKey),
+    ...Object.entries(GREENHOUSES).map(([key, greenhouse]) =>
+      optionMarkup(key, greenhouse.name, selectedKey)
+    )
+  ].join("");
+}
+
+function renderLocationOptions(greenhouseKey, selectedRow) {
+  const greenhouse = GREENHOUSES[greenhouseKey];
+  return [
+    optionMarkup("", "Select row or tower", selectedRow),
+    ...(greenhouse?.rows || []).map((row) => optionMarkup(row, row, selectedRow))
+  ].join("");
+}
+
+function optionMarkup(value, label, selectedValue) {
+  const selected = value === selectedValue ? " selected" : "";
+  return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(label)}</option>`;
+}
+
+function updateInlineRowOptions(row) {
+  const greenhouseKey = row.querySelector("[data-edit-greenhouse]")?.value;
+  const locationSelect = row.querySelector("[data-edit-row]");
+  if (!locationSelect) return;
+  locationSelect.innerHTML = renderLocationOptions(greenhouseKey, locationSelect.value);
+  locationSelect.disabled = !GREENHOUSES[greenhouseKey];
+}
+
+function updateInlinePreview(row) {
+  const plantingDate = row.querySelector("[data-edit-date]")?.value;
+  const harvestDate = computeHarvestDate(plantingDate);
+  const status = getHarvestStatus(computeDaysLeft(harvestDate));
+  const harvestCell = row.querySelector("[data-edit-harvest]");
+  const statusBadge = row.querySelector("[data-edit-status]");
+
+  row.className = `status-${status.kind} editing-row`;
+  if (harvestCell) harvestCell.textContent = formatDisplayDate(harvestDate);
+  if (statusBadge) {
+    statusBadge.className = `status-badge ${status.kind}`;
+    statusBadge.textContent = status.label;
+  }
+}
+
+function hasDuplicateEntry(greenhouseKey, row, plantingDate, excludeId = "") {
+  return entries.some(
+    (entry) =>
+      entry.id !== excludeId &&
+      entry.greenhouseKey === greenhouseKey &&
+      entry.row === row &&
+      entry.plantingDate === plantingDate
+  );
 }
 
 async function enableAlerts() {
